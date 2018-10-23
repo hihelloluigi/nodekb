@@ -1,0 +1,4 @@
+- Usually 'main' is called app.js or server.js or index.js
+- If you want to add a dependecy and you want to automatically change package.json you have to write: npm install --save <dependecy>
+- If you want to add a dependecy globally write: sudo npm install -g <dependecy>
+- nodemon is super usefull. It allow you to not restart the server every time somethings in js file is changed 
