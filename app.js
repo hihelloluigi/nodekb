@@ -2,6 +2,8 @@ const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const flash = require('connect-flash');
+const session = require('express-session');
 
 mongoose.connect("mongodb://localhost/nodekb", { useNewUrlParser: true });
 
@@ -34,6 +36,23 @@ app.use(bodyParser.json());
 // Set Public Folder
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Express Session Middleware
+app.use(session({
+  secret: 'keyboard cat',
+  resave: true,
+  saveUninitialized: true
+}))
+
+// Express Messages Middleware
+app.use(require('connect-flash')());
+app.use(function (req, res, next) {
+  res.locals.messages = require('express-messages')(req, res);
+  next();
+});
+
+// Express Validator
+app.use(express.json());
+
 // Home Route
 app.get('/', function(req, res){
   Article.find({}, function(err, articles){
@@ -48,38 +67,9 @@ app.get('/', function(req, res){
   });
 });
 
-// Get Single Article
-app.get('/article/:id', function(req, res){
-  Article.findById(req.params.id, function(err, article){
-    res.render('article', {
-      article: article
-    });
-  });
-});
-
-// Add Route
-app.get('/articles/add', function(req, res){
-  res.render('add_article', {
-    article: 'Add Article'
-  });
-});
-
-// Add Submit POST Route
-app.post('/articles/add', function(req, res){
-  let article = new Article();
-  article.title = req.body.title;
-  article.author = req.body.author;
-  article.body = req.body.body;
-
-  article.save(function(err) {
-    if(err){
-      console.log(err);
-      return;
-    } else {
-      res.redirect('/')
-    }
-  });
-});
+// Route Files
+let articles = require('./routes/articles');
+app.use('/articles', articles);
 
 //New es6 syntax
 /*app.get('/', () => {
