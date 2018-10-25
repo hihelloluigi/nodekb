@@ -4,9 +4,10 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const flash = require('connect-flash');
 const session = require('express-session');
+const config = require('./config/database');
+const passport = require('passport');
 
-mongoose.connect("mongodb://localhost/nodekb", { useNewUrlParser: true });
-
+mongoose.connect(config.database, { useNewUrlParser: true });
 let db = mongoose.connection;
 
 // Check connection
@@ -53,6 +54,17 @@ app.use(function (req, res, next) {
 // Express Validator
 app.use(express.json());
 
+// Passport Config
+require('./config/passport')(passport);
+// Passport Middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.get('*', function(req, res, next){
+  res.locals.user = req.user || null;
+  next();
+});
+
 // Home Route
 app.get('/', function(req, res){
   Article.find({}, function(err, articles){
@@ -70,6 +82,8 @@ app.get('/', function(req, res){
 // Route Files
 let articles = require('./routes/articles');
 app.use('/articles', articles);
+let users = require('./routes/users');
+app.use('/users', users);
 
 //New es6 syntax
 /*app.get('/', () => {
